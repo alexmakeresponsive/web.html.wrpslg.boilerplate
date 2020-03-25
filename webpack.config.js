@@ -3,7 +3,7 @@ var path              = require("path");
 var webpack           = require('webpack');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var autoprefixer      = require('autoprefixer');
-var postStylus        = require('poststylus');
+// var postStylus        = require('poststylus');
 var lostGrid          = require('lost');
 // var BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
@@ -33,16 +33,15 @@ plugins.push(
         M:         'moduleMPath'
     })
 );
-plugins.push(
-    new webpack.LoaderOptionsPlugin({
-        options: {
-            stylus: {
-                use: [postStylus([ 'autoprefixer', 'lost' ])]
-            }
-        }
-    })
-
-);
+// plugins.push(
+//     new webpack.LoaderOptionsPlugin({
+//         options: {
+//             stylus: {
+//                 use: [postStylus([ 'autoprefixer', 'lost' ])]
+//             }
+//         }
+//     })
+// );
 // plugins.push(new BundleAnalyzerPlugin());
 // plugins.push(new webpack.optimize.CommonsChunkPlugin({
 //     name: 'common',
@@ -171,6 +170,45 @@ module.exports = {
                 )
             },
             {
+                test: /components\/vendor\/?(?:[^\/]+\/?)*.styl$/,
+                use: extractVendorCSS.extract(
+                    {
+                        fallback: 'style-loader',
+                        use: [
+                            {
+                                loader: 'css-loader',
+                                options: {
+                                    // If you are having trouble with urls not resolving add this setting.
+                                    // See https://github.com/webpack-contrib/css-loader#url
+                                    url: false,
+                                    minimize: true,
+                                    sourceMap: true
+                                }
+                            },
+                            {
+                                loader: 'postcss-loader',
+                                options: {
+                                    plugins: [
+                                        autoprefixer({
+                                            browsers:['ie >= 10', 'last 2 version']
+                                        }),
+                                        lostGrid
+
+                                    ],
+                                    sourceMap: true
+                                }
+                            },
+                            {
+                                loader: 'stylus-loader',
+                                options: {
+                                    sourceMap: true
+                                }
+                            }
+                        ]
+                    }
+                )
+            },
+            {
                 test: /components\/vendor\/?(?:[^\/]+\/?)*.css$/,
                 use: extractVendorCSS.extract(
                     {
@@ -197,11 +235,10 @@ module.exports = {
                                     sourceMap: true
                                 }
                             }
-                        ],
+                        ]
                     }
                 )
-            },
-
+            }
         ]
     },
     // externals: {
